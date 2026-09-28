@@ -1,14 +1,34 @@
 export interface AutomationTestResult {
-  status: 'not-connected' | 'started' | 'error';
+  status: 'success' | 'failure';
   message: string;
+  makeResponse?: unknown;
 }
 
-export const automationTestEndpoint = '/api/automation/test';
+export const automationTestEndpoint = '/api/test-make';
 
-// Vervang deze melding door een POST naar automationTestEndpoint zodra de backend bestaat.
 export async function testAutomation(): Promise<AutomationTestResult> {
-  return {
-    status: 'not-connected',
-    message: 'Make-koppeling wordt in de volgende stap toegevoegd.',
-  };
+  try {
+    const response = await fetch(automationTestEndpoint, { method: 'POST' });
+    const result = (await response.json()) as {
+      success?: boolean;
+      message?: string;
+      makeResponse?: unknown;
+    };
+
+    if (!response.ok || !result.success) {
+      return {
+        status: 'failure',
+        message: result.message || 'Verbinding met Make mislukt',
+        makeResponse: result.makeResponse,
+      };
+    }
+
+    return {
+      status: 'success',
+      message: 'Verbinding met Make werkt',
+      makeResponse: result.makeResponse,
+    };
+  } catch {
+    return { status: 'failure', message: 'Verbinding met Make mislukt' };
+  }
 }

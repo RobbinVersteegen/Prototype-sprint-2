@@ -42,6 +42,8 @@ function App() {
     setAutomationResult(undefined);
     try {
       setAutomationResult(await testAutomation());
+    } catch {
+      setAutomationResult({ status: 'failure', message: 'Verbinding met Make mislukt' });
     } finally {
       setTestingAutomation(false);
     }

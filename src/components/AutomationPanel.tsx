@@ -56,13 +56,24 @@ export function AutomationPanel({ testing, result, onTest }: AutomationPanelProp
       </div>
 
       <div className="automation-footer">
-        <div className="automation-footnote"><span className="footnote-dot" /> Website nog niet gekoppeld aan Make</div>
+        <div className="automation-footnote"><span className="footnote-dot" /> Test via server-side API</div>
         <button className="button button-primary" onClick={onTest} disabled={testing}>
           <Play size={15} fill="currentColor" />
-          {testing ? 'Backend controleren...' : 'Automatisering testen'}
+          {testing ? 'Verbinding testen...' : 'Automatisering testen'}
         </button>
       </div>
-      {result && <p className={`action-feedback automation-feedback ${result.status}`} role="status">{result.message}</p>}
+      {result && (
+        <div className={`action-feedback automation-feedback ${result.status}`} role="status" aria-live="polite">
+          <strong>{result.status === 'success' ? 'Make-verbinding actief' : 'Verbinding met Make mislukt'}</strong>
+          <span>{result.message}</span>
+          {result.makeResponse !== undefined && (
+            <details className="make-response-details">
+              <summary>Antwoord van Make</summary>
+              <pre>{JSON.stringify(result.makeResponse, null, 2)}</pre>
+            </details>
+          )}
+        </div>
+      )}
     </section>
   );
 }
