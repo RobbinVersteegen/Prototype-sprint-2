@@ -4,7 +4,7 @@ const navigation = [
   { label: 'Dashboard', icon: LayoutDashboard, active: true },
   { label: 'Koppelingen', icon: Settings2, active: false },
   { label: 'Automatisering', icon: Activity, active: false },
-  { label: 'Resultaten', icon: FileSpreadsheet, active: false },
+  { label: 'Verwerkingen', icon: FileSpreadsheet, active: false },
 ];
 
 export function Sidebar() {

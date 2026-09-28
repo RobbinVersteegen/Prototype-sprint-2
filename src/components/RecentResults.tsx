@@ -1,8 +1,10 @@
-import { ArrowRight, Inbox } from 'lucide-react';
+import { Inbox } from 'lucide-react';
 import type { ProcessingResult } from '../types';
 
 interface RecentResultsProps {
   results: ProcessingResult[];
+  loading: boolean;
+  error?: string;
 }
 
 const statusClass: Record<ProcessingResult['status'], string> = {
@@ -17,40 +19,53 @@ const classificationClass: Record<ProcessingResult['classification'], string> = 
   ONZEKER: 'badge-uncertain',
 };
 
-export function RecentResults({ results }: RecentResultsProps) {
+export function RecentResults({ results, loading, error }: RecentResultsProps) {
   return (
-    <section className="panel results-panel" id="resultaten" aria-labelledby="results-title">
+    <section className="panel results-panel" id="verwerkingen" aria-labelledby="results-title">
       <div className="panel-heading results-heading">
         <div>
-          <p className="eyebrow">OVERZICHT</p>
-          <h2 id="results-title">Recente verwerkingen</h2>
+          <p className="eyebrow">ORDERREGISTRATIE</p>
+          <h2 id="results-title">Verwerkingen</h2>
         </div>
-        <a href="#resultaten" className="text-link">Alle resultaten <ArrowRight size={15} /></a>
       </div>
 
       <div className="results-table-wrap">
         <table className="results-table">
           <thead>
             <tr>
-              <th scope="col">ORDER</th>
+              <th scope="col">DATUM / TIJD</th>
+              <th scope="col">ORDERNUMMER</th>
+              <th scope="col">AFZENDER / KLANT</th>
               <th scope="col">CLASSIFICATIE</th>
               <th scope="col">STATUS</th>
-              <th scope="col">ONTVANGEN</th>
+              <th scope="col">REDEN</th>
             </tr>
           </thead>
           <tbody>
             {results.map((result) => (
               <tr key={result.id}>
-                <td className="order-id"><span className="order-icon"><Inbox size={15} /></span>#{result.id}</td>
+                <td className="received-time">{result.receivedAt}</td>
+                <td className="order-id"><span className="order-icon"><Inbox size={15} /></span>{result.orderNumber}</td>
+                <td>{result.customer}</td>
                 <td><span className={`classification-badge ${classificationClass[result.classification]}`}>{result.classification}</span></td>
                 <td><span className={`result-status ${statusClass[result.status]}`}><span />{result.status}</span></td>
-                <td className="received-time">{result.receivedAt}</td>
+                <td>{result.reason ?? '—'}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="demo-data-note">Voorbeeldgegevens · nog niet verbonden met een backend</p>
+      {error ? (
+        <p className="results-empty-state results-error" role="status">{error}</p>
+      ) : loading ? (
+        <p className="results-empty-state" role="status">Verwerkingsgegevens ophalen...</p>
+      ) : results.length === 0 ? (
+        <div className="results-empty-state">
+          <span className="empty-state-icon"><Inbox size={19} /></span>
+          <h3>Nog geen verwerkingsgegevens beschikbaar</h3>
+          <p>Verwerkingen worden hier weergegeven zodra de koppeling met de automatisering actief is.</p>
+        </div>
+      ) : null}
     </section>
   );
 }

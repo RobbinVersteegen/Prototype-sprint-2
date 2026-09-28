@@ -21,9 +21,9 @@ npm run build
 ## Structuur en toekomstige Make-koppeling
 
 - `src/components/` bevat de UI-onderdelen.
-- `src/data/demoResults.ts` bevat de drie losse voorbeeldresultaten.
-- `src/services/connectionService.ts` bevat de demo-acties voor Gmail en Sheets.
-- `src/services/orderAutomationService.ts` is het aansluitpunt voor de automatiseringstest.
+- `src/components/` bevat de dashboardonderdelen en de lege resultatenstaat.
+- `src/services/processingResultsService.ts` haalt resultaten op via `GET /api/processing-results`; zonder die backend-route blijft de lijst leeg.
+- `src/services/orderAutomationService.ts` toont tot de backend bestaat dat de test niet is gekoppeld. Het aansluitpunt is `POST /api/automation/test`.
 - `src/types.ts` bevat de gedeelde gegevensvormen.
 
 Vervang later de demo-service door requests vanuit de frontend naar een eigen backend/API. Laat die server-side API met Make praten en bewaar webhook-URL's, sleutels en Google/Gmail-gegevens uitsluitend in server-side environment variables. Zet ze niet in `VITE_`-variabelen of frontendcode.

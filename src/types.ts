@@ -4,9 +4,12 @@ export type ProcessingStatus = 'Verwerkt' | 'Controle nodig' | 'Niet verwerkt';
 
 export interface ProcessingResult {
   id: string;
+  receivedAt: string;
+  orderNumber: string;
+  customer: string;
   classification: OrderClassification;
   status: ProcessingStatus;
-  receivedAt: string;
+  reason?: string;
 }
 
 export type ConnectionProvider = 'Gmail' | 'Google Sheets';

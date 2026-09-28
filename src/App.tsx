@@ -1,35 +1,41 @@
-import { useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Bell, ChevronDown, Clock3, Mail, PackageCheck, ShieldCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowUpRight, Clock3, Mail, PackageCheck, Workflow } from 'lucide-react';
 import { AutomationPanel } from './components/AutomationPanel';
 import { ConnectionCard } from './components/ConnectionCard';
 import { RecentResults } from './components/RecentResults';
 import { Sidebar } from './components/Sidebar';
-import { demoResults } from './data/demoResults';
-import { testConnection, type ConnectionTestResult } from './services/connectionService';
 import { testAutomation, type AutomationTestResult } from './services/orderAutomationService';
+import { getProcessingResults } from './services/processingResultsService';
 import type { ConnectionProvider } from './types';
 
 const connections: { provider: ConnectionProvider; description: string }[] = [
-  { provider: 'Gmail', description: 'Binnenkomende e-mails worden automatisch gecontroleerd.' },
-  { provider: 'Google Sheets', description: 'Verwerkte orders worden automatisch geregistreerd.' },
+  { provider: 'Gmail', description: 'Het testaccount is gekoppeld aan de bestaande Make-workflow.' },
+  { provider: 'Google Sheets', description: 'Ordergegevens worden via de bestaande Make-workflow geregistreerd.' },
 ];
 
 function App() {
-  const [testingProvider, setTestingProvider] = useState<ConnectionProvider | null>(null);
-  const [connectionResults, setConnectionResults] = useState<Partial<Record<ConnectionProvider, ConnectionTestResult>>>({});
   const [testingAutomation, setTestingAutomation] = useState(false);
   const [automationResult, setAutomationResult] = useState<AutomationTestResult>();
+  const [processingResults, setProcessingResults] = useState<Awaited<ReturnType<typeof getProcessingResults>>>([]);
+  const [resultsLoading, setResultsLoading] = useState(true);
+  const [resultsError, setResultsError] = useState<string>();
 
-  async function handleConnectionTest(provider: ConnectionProvider) {
-    setTestingProvider(provider);
-    setConnectionResults((current) => ({ ...current, [provider]: undefined }));
-    try {
-      const result = await testConnection(provider);
-      setConnectionResults((current) => ({ ...current, [provider]: result }));
-    } finally {
-      setTestingProvider(null);
-    }
-  }
+  useEffect(() => {
+    let isCurrent = true;
+
+    getProcessingResults()
+      .then((results) => {
+        if (isCurrent) setProcessingResults(results);
+      })
+      .catch(() => {
+        if (isCurrent) setResultsError('Verwerkingsgegevens konden niet worden opgehaald.');
+      })
+      .finally(() => {
+        if (isCurrent) setResultsLoading(false);
+      });
+
+    return () => { isCurrent = false; };
+  }, []);
 
   async function handleAutomationTest() {
     setTestingAutomation(true);
@@ -49,8 +55,7 @@ function App() {
           <div className="breadcrumb"><span>Werkruimte</span><span className="breadcrumb-separator">/</span><strong>Dashboard</strong></div>
           <div className="topbar-actions">
             <span className="topbar-prototype"><span /> Prototype omgeving</span>
-            <button className="icon-button notification-button" aria-label="Meldingen"><Bell size={18} /><span /></button>
-            <button className="profile-button" aria-label="Profielmenu"><span className="avatar">RV</span><span>Mijn omgeving</span><ChevronDown size={14} /></button>
+            <div className="profile-display" aria-label="Persoonlijk prototype"><span className="avatar" aria-hidden="true">RV</span><span>Persoonlijk prototype</span></div>
           </div>
         </header>
 
@@ -66,27 +71,27 @@ function App() {
 
           <section className="metrics-row" aria-label="Automatisering in het kort">
             <article className="metric-item">
-              <span className="metric-icon metric-icon-green"><PackageCheck size={18} /></span>
-              <div><p className="metric-label">Automatisering</p><p className="metric-value">Actief <span className="metric-live"><span /> Live</span></p></div>
+              <span className="metric-icon metric-icon-green"><Workflow size={18} /></span>
+              <div><p className="metric-label">Automatisering</p><p className="metric-value">Actief <span className="metric-live"><span /> Via Make</span></p></div>
               <ArrowUpRight className="metric-trend" size={17} />
             </article>
             <span className="metric-divider" />
             <article className="metric-item">
               <span className="metric-icon metric-icon-orange"><Mail size={18} /></span>
-              <div><p className="metric-label">E-mailbewaking</p><p className="metric-value">Ingeschakeld <span className="metric-muted">Gmail</span></p></div>
-              <ArrowDownRight className="metric-trend muted-trend" size={17} />
+              <div><p className="metric-label">E-mailbron</p><p className="metric-value">Gmail <span className="metric-muted">Via Make</span></p></div>
+              <ArrowUpRight className="metric-trend muted-trend" size={17} />
             </article>
             <span className="metric-divider" />
             <article className="metric-item">
-              <span className="metric-icon metric-icon-blue"><ShieldCheck size={18} /></span>
-              <div><p className="metric-label">Laatste verwerking</p><p className="metric-value">10:42 <span className="metric-muted">Vandaag</span></p></div>
+              <span className="metric-icon metric-icon-blue"><PackageCheck size={18} /></span>
+              <div><p className="metric-label">Orderregistratie</p><p className="metric-value">Google Sheets <span className="metric-muted">Via Make</span></p></div>
               <span className="metric-success-dot" />
             </article>
           </section>
 
           <div className="section-heading" id="koppelingen">
             <div><p className="eyebrow">VERBONDEN DIENSTEN</p><h2>Koppelingen</h2></div>
-            <span className="section-count"><span /> 2 actief</span>
+            <span className="section-count"><span /> 2 via Make</span>
           </div>
           <section className="connections-grid" aria-label="Gekoppelde diensten">
             {connections.map(({ provider, description }) => (
@@ -94,19 +99,16 @@ function App() {
                 key={provider}
                 provider={provider}
                 description={description}
-                testing={testingProvider === provider}
-                result={connectionResults[provider]}
-                onTest={handleConnectionTest}
               />
             ))}
           </section>
 
           <div className="lower-grid">
             <AutomationPanel testing={testingAutomation} result={automationResult} onTest={handleAutomationTest} />
-            <RecentResults results={demoResults} />
+            <RecentResults results={processingResults} loading={resultsLoading} error={resultsError} />
           </div>
 
-          <footer className="page-footer"><span>Order Automation <span className="footer-separator">·</span> Studieprototype</span><span>Demo-modus actief</span></footer>
+          <footer className="page-footer"><span>Order Automation <span className="footer-separator">·</span> Studieprototype</span><span>Automatisering via Make</span></footer>
         </div>
       </main>
     </div>

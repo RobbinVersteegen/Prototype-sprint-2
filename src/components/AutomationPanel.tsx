@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, CircleHelp, Mail, Play, ScanSearch, Sheet } from 'lucide-react';
+import { ArrowDown, CircleHelp, Mail, PackageCheck, Play, ScanSearch, Sheet, Tags, Workflow } from 'lucide-react';
 import type { AutomationTestResult } from '../services/orderAutomationService';
 
 interface AutomationPanelProps {
@@ -8,9 +8,12 @@ interface AutomationPanelProps {
 }
 
 const steps = [
-  { label: 'Automatisch e-mails controleren', icon: Mail },
+  { label: 'Gmail', icon: Mail },
+  { label: 'Make', detail: 'Voert de automatisering op de achtergrond uit', icon: Workflow, active: true },
   { label: 'AI-classificatie', icon: ScanSearch },
-  { label: 'Automatische orderregistratie', icon: Sheet },
+  { label: 'ORDER / GEEN_ORDER / ONZEKER', icon: Tags },
+  { label: 'Orderregistratie', icon: PackageCheck },
+  { label: 'Google Sheets', icon: Sheet },
 ];
 
 export function AutomationPanel({ testing, result, onTest }: AutomationPanelProps) {
@@ -19,58 +22,47 @@ export function AutomationPanel({ testing, result, onTest }: AutomationPanelProp
       <div className="panel-heading">
         <div>
           <p className="eyebrow">AUTOMATISERING</p>
-          <h2 id="automation-title">Orderverwerking</h2>
+          <h2 id="automation-title">Orderautomatisering</h2>
         </div>
         <span className="active-pill"><span className="pulse-dot" /> Actief</span>
       </div>
 
-      <div className="automation-flow" aria-label="Actieve automatiseringsstappen">
-        {steps.map(({ label, icon: Icon }, index) => (
+      <p className="automation-summary">Make voert de automatisering momenteel op de achtergrond uit.</p>
+
+      <div className="automation-flow" aria-label="Gmail via Make naar orderregistratie in Google Sheets">
+        {steps.map(({ label, detail, icon: Icon, active }, index) => (
           <div className="flow-step-wrap" key={label}>
             <div className="flow-step">
               <span className="flow-icon"><Icon size={17} /></span>
-              <span className="flow-label">{label}</span>
-              <span className="flow-status"><Check size={13} /> Actief</span>
+              <span className="flow-copy">
+                <span className="flow-label">{label}</span>
+                {detail && <span className="flow-detail">{detail}</span>}
+              </span>
+              {active && <span className="flow-status">Actief</span>}
             </div>
-            {index < steps.length - 1 && <span className="flow-connector" />}
+            {index < steps.length - 1 && <ArrowDown className="flow-connector" size={14} />}
           </div>
         ))}
       </div>
 
       <div className="outcome-heading">
-        <div>
-          <h3>AI-classificatie</h3>
-          <p>Elke e-mail krijgt een van deze uitkomsten</p>
-        </div>
+        <div><h3>AI-classificatie</h3><p>Uitkomsten van de bestaande Make-workflow</p></div>
         <CircleHelp size={17} aria-hidden="true" />
       </div>
-
-      <div className="outcome-list">
-        <div className="outcome-row">
-          <span className="classification-badge badge-order">ORDER</span>
-          <span className="outcome-description">Bestelling herkend en automatisch verwerken.</span>
-          <ArrowUpRight className="outcome-arrow" size={16} />
-        </div>
-        <div className="outcome-row">
-          <span className="classification-badge badge-no-order">GEEN_ORDER</span>
-          <span className="outcome-description">Geen bestelling en dus niet registreren.</span>
-          <ArrowUpRight className="outcome-arrow" size={16} />
-        </div>
-        <div className="outcome-row">
-          <span className="classification-badge badge-uncertain">ONZEKER</span>
-          <span className="outcome-description">AI heeft onvoldoende zekerheid. Menselijke controle is nodig.</span>
-          <ArrowUpRight className="outcome-arrow" size={16} />
-        </div>
+      <div className="classification-legend" aria-label="Mogelijke AI-classificaties">
+        <span className="classification-badge badge-order">ORDER</span>
+        <span className="classification-badge badge-no-order">GEEN_ORDER</span>
+        <span className="classification-badge badge-uncertain">ONZEKER</span>
       </div>
 
       <div className="automation-footer">
-        <div className="automation-footnote"><span className="footnote-dot" /> Laatst getest: vandaag, 10:42</div>
+        <div className="automation-footnote"><span className="footnote-dot" /> Website nog niet gekoppeld aan Make</div>
         <button className="button button-primary" onClick={onTest} disabled={testing}>
           <Play size={15} fill="currentColor" />
-          {testing ? 'Test wordt uitgevoerd...' : 'Automatisering testen'}
+          {testing ? 'Backend controleren...' : 'Automatisering testen'}
         </button>
       </div>
-      {result && <p className="action-feedback automation-feedback" role="status">{result.message}</p>}
+      {result && <p className={`action-feedback automation-feedback ${result.status}`} role="status">{result.message}</p>}
     </section>
   );
 }

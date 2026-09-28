@@ -1,14 +1,14 @@
 export interface AutomationTestResult {
-  accepted: boolean;
+  status: 'not-connected' | 'started' | 'error';
   message: string;
 }
 
-// Dit is het toekomstige aansluitpunt voor je eigen backend/API richting Make.
-export async function testAutomation(): Promise<AutomationTestResult> {
-  await new Promise((resolve) => window.setTimeout(resolve, 800));
+export const automationTestEndpoint = '/api/automation/test';
 
+// Vervang deze melding door een POST naar automationTestEndpoint zodra de backend bestaat.
+export async function testAutomation(): Promise<AutomationTestResult> {
   return {
-    accepted: true,
-    message: 'Demo afgerond. Koppel deze actie later aan de backend en Make.',
+    status: 'not-connected',
+    message: 'Make-koppeling wordt in de volgende stap toegevoegd.',
   };
 }
