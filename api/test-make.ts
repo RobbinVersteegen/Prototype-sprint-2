@@ -49,12 +49,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const webhookUrl = process.env.MAKE_WEBHOOK_URL;
   if (!webhookUrl) {
+    console.info('[Make] final success:', false);
     return res.status(500).json({ success: false, message: 'MAKE_WEBHOOK_URL is niet ingesteld in Vercel.' });
   }
 
   try {
     const parsedUrl = new URL(webhookUrl);
     if (parsedUrl.protocol !== 'https:') {
+      console.info('[Make] final success:', false);
       return res.status(500).json({ success: false, message: 'MAKE_WEBHOOK_URL moet een HTTPS-adres zijn.' });
     }
 
@@ -62,30 +64,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(testPayload),
-      signal: AbortSignal.timeout(8000),
     });
     const responseText = await makeResponse.text();
+    console.info('[Make] HTTP status:', makeResponse.status);
+    console.info('[Make] raw response text:', responseText);
 
-    let order: MakeOrder | undefined;
+    let parsedResponse: unknown;
     try {
-      order = readMakeOrder(JSON.parse(responseText) as unknown);
+      parsedResponse = JSON.parse(responseText) as unknown;
     } catch {
-      // A successful webhook response can start automation without returning an order.
+      parsedResponse = undefined;
     }
+    console.info('[Make] parsed response:', parsedResponse);
 
+    const order = readMakeOrder(parsedResponse);
     if (!makeResponse.ok || !order) {
+      console.info('[Make] final success:', false);
       return res.status(502).json({
         success: false,
         message: 'Automatisering kon niet worden gestart',
       });
     }
 
+    console.info('[Make] final success:', true);
     return res.status(200).json({
       success: true,
-      message: 'Automatisering gestart',
+      message: 'Order succesvol verwerkt',
       order,
     });
   } catch {
+    console.info('[Make] final success:', false);
     return res.status(502).json({ success: false, message: 'Automatisering kon niet worden gestart' });
   }
 }

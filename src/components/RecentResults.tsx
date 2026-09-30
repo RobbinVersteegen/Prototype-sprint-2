@@ -20,7 +20,7 @@ const classificationClass: Record<string, string> = {
 };
 
 function displayOptionalValue(value?: string) {
-  return value?.trim() || '—';
+  return value?.trim() || '-';
 }
 
 export function RecentResults({ results, loading, error }: RecentResultsProps) {

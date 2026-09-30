@@ -14,6 +14,17 @@ function isMakeOrderData(value: unknown): value is MakeOrderData {
   return typeof order.ordernummer === 'string' && order.ordernummer.trim().length > 0;
 }
 
+function readSuccessfulOrder(value: unknown): MakeOrderData | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+
+  const result = value as Record<string, unknown>;
+  if (result.success !== true) return undefined;
+
+  const nestedOrder = result.order;
+  if (isMakeOrderData(nestedOrder)) return nestedOrder;
+  return isMakeOrderData(result) ? result : undefined;
+}
+
 export async function testAutomation(): Promise<AutomationTestResult> {
   try {
     const response = await fetch(automationTestEndpoint, { method: 'POST' });
@@ -33,22 +44,19 @@ export async function testAutomation(): Promise<AutomationTestResult> {
     }
 
     let order: MakeOrderData | undefined;
-    let success = false;
     try {
-      const result = (await response.json()) as { success?: unknown; order?: unknown };
-      success = result.success === true;
-      if (isMakeOrderData(result.order)) order = result.order;
+      order = readSuccessfulOrder(await response.json() as unknown);
     } catch {
-      // A successful HTTP response without valid order data is not a processed order.
+      // An invalid API response is not a successfully processed order.
     }
 
-    if (!success || !order) {
+    if (!order) {
       return { status: 'failure', message: 'Automatisering kon niet worden gestart' };
     }
 
     return {
       status: 'success',
-      message: 'Make is succesvol geactiveerd en controleert Gmail op nieuwe orders.',
+      message: 'Order succesvol verwerkt',
       order,
     };
   } catch {

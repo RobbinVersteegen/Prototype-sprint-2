@@ -64,8 +64,8 @@ export function AutomationPanel({ testing, result, onTest }: AutomationPanelProp
       </div>
       {result && (
         <div className={`action-feedback automation-feedback ${result.status}`} role="status" aria-live="polite">
-          <strong>{result.status === 'success' ? 'Automatisering gestart' : 'Automatisering kon niet worden gestart'}</strong>
-          {result.message !== (result.status === 'success' ? 'Automatisering gestart' : 'Automatisering kon niet worden gestart') && (
+          <strong>{result.status === 'success' ? 'Order succesvol verwerkt' : 'Automatisering kon niet worden gestart'}</strong>
+          {result.message !== (result.status === 'success' ? 'Order succesvol verwerkt' : 'Automatisering kon niet worden gestart') && (
             <span>{result.message}</span>
           )}
         </div>
