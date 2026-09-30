@@ -1,6 +1,6 @@
 # Order Automation prototype
 
-Een studieprototype voor een dashboard rond geautomatiseerde orderverwerking met Gmail, AI en Google Sheets. De Make-verbindingstest loopt via een server-side Vercel API-route.
+Een studieprototype voor een dashboard rond geautomatiseerde orderverwerking met Gmail, AI en Google Sheets. De Make-automatisering wordt gestart via een server-side Vercel API-route.
 
 ## Lokaal starten
 
@@ -33,11 +33,11 @@ De webhook-URL staat uitsluitend in de server-side environment variable `MAKE_WE
 
 Deploy de bestaande Vite-app met `npm run build` als build command en `dist` als output directory. Vercel herkent `api/test-make.ts` als serverless function naast de statische frontend.
 
-Om de verbinding te testen:
+Om de automatisering te starten:
 
-1. Zet het Make Custom Webhook-scenario aan en controleer dat Webhook Response JSON terugstuurt.
+1. Zet het Make Custom Webhook-scenario aan. Een succesvolle HTTP 2xx-response is voldoende; er is geen specifieke JSON-response nodig.
 2. Voeg in Vercel `MAKE_WEBHOOK_URL` toe met de Custom Webhook-URL als waarde. Selecteer ten minste Production of Preview, afhankelijk van je testdeployment.
-3. Deploy de app opnieuw zodat de functie de environment variable ontvangt.
-4. Open de deployment, klik op **Automatisering testen** en controleer de succes- of foutmelding. Bij succes kun je onder **Antwoord van Make** het ontvangen JSON-antwoord bekijken.
+3. Deploy of redeploy de app nadat je code of environment variables hebt aangepast.
+4. Open de deployment en klik op **Automatisering starten**. Een succesmelding betekent dat Make de aanvraag heeft geaccepteerd; het garandeert niet dat een order volledig is verwerkt.
 
 De Make-webhook ontvangt `{ "action": "test_connection", "source": "order-automation-dashboard" }`. De webhook-URL wordt nooit naar de browser gestuurd.

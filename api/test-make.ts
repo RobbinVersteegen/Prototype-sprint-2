@@ -13,15 +13,6 @@ const testPayload = {
   source: 'order-automation-dashboard',
 };
 
-function isExplicitMakeFailure(value: unknown): boolean {
-  if (typeof value !== 'object' || value === null) return false;
-
-  const response = value as { success?: unknown; status?: unknown; error?: unknown };
-  return response.success === false
-    || (response.error !== undefined && response.error !== null && response.error !== false)
-    || (typeof response.status === 'string' && ['error', 'failed', 'failure'].includes(response.status.toLowerCase()));
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<VercelResponse> {
   res.setHeader('Cache-Control', 'no-store');
 
@@ -48,30 +39,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       signal: AbortSignal.timeout(8000),
     });
 
-    const responseText = await makeResponse.text();
-    let responseData: unknown;
-    let validJson = true;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch {
-      responseData = responseText;
-      validJson = false;
-    }
-
-    if (!makeResponse.ok || !validJson || isExplicitMakeFailure(responseData)) {
+    if (!makeResponse.ok) {
       return res.status(502).json({
         success: false,
-        message: 'Verbinding met Make mislukt',
-        makeResponse: responseData,
+        message: 'Automatisering kon niet worden gestart',
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Verbinding met Make werkt',
-      makeResponse: responseData,
+      message: 'Automatisering gestart',
     });
   } catch {
-    return res.status(502).json({ success: false, message: 'Verbinding met Make mislukt' });
+    return res.status(502).json({ success: false, message: 'Automatisering kon niet worden gestart' });
   }
 }

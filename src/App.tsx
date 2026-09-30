@@ -43,7 +43,7 @@ function App() {
     try {
       setAutomationResult(await testAutomation());
     } catch {
-      setAutomationResult({ status: 'failure', message: 'Verbinding met Make mislukt' });
+      setAutomationResult({ status: 'failure', message: 'Automatisering kon niet worden gestart' });
     } finally {
       setTestingAutomation(false);
     }
