@@ -19,6 +19,10 @@ const classificationClass: Record<string, string> = {
   ONZEKER: 'badge-uncertain',
 };
 
+function displayOptionalValue(value?: string) {
+  return value?.trim() || '—';
+}
+
 export function RecentResults({ results, loading, error }: RecentResultsProps) {
   return (
     <section className="panel results-panel" id="verwerkingen" aria-labelledby="results-title">
@@ -48,9 +52,9 @@ export function RecentResults({ results, loading, error }: RecentResultsProps) {
               <tr key={result.id}>
                 <td className="received-time">{result.receivedAt ?? '—'}</td>
                 <td className="order-id"><span className="order-icon"><Inbox size={15} /></span>{result.orderNumber}</td>
-                <td>{result.customer ?? '—'}</td>
-                <td>{result.model ?? '—'}</td>
-                <td>{result.quantity ?? '—'}</td>
+                <td>{displayOptionalValue(result.customer)}</td>
+                <td>{displayOptionalValue(result.model)}</td>
+                <td>{displayOptionalValue(result.quantity)}</td>
                 <td>{result.classification ? <span className={`classification-badge ${classificationClass[result.classification]}`}>{result.classification}</span> : '—'}</td>
                 <td><span className={`result-status ${statusClass[result.status ?? ''] ?? 'status-new'}`}><span />{result.status ?? '—'}</span></td>
                 <td>{result.reason ?? '—'}</td>

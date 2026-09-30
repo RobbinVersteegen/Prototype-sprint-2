@@ -33,17 +33,23 @@ export async function testAutomation(): Promise<AutomationTestResult> {
     }
 
     let order: MakeOrderData | undefined;
+    let success = false;
     try {
-      const result = (await response.json()) as { order?: unknown };
+      const result = (await response.json()) as { success?: unknown; order?: unknown };
+      success = result.success === true;
       if (isMakeOrderData(result.order)) order = result.order;
     } catch {
-      // Any HTTP 2xx remains a successful start, even without an order response.
+      // A successful HTTP response without valid order data is not a processed order.
+    }
+
+    if (!success || !order) {
+      return { status: 'failure', message: 'Automatisering kon niet worden gestart' };
     }
 
     return {
       status: 'success',
       message: 'Make is succesvol geactiveerd en controleert Gmail op nieuwe orders.',
-      ...(order ? { order } : {}),
+      order,
     };
   } catch {
     return { status: 'failure', message: 'Automatisering kon niet worden gestart' };

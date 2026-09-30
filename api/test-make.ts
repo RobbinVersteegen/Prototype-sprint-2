@@ -25,7 +25,7 @@ function readMakeOrder(value: unknown): MakeOrder | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
 
   const data = value as Record<string, unknown>;
-  if (typeof data.ordernummer !== 'string' || !data.ordernummer.trim()) return undefined;
+  if (data.success !== true || typeof data.ordernummer !== 'string' || !data.ordernummer.trim()) return undefined;
 
   const toStringValue = (field: unknown) =>
     typeof field === 'string' || typeof field === 'number' ? String(field) : undefined;
@@ -73,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       // A successful webhook response can start automation without returning an order.
     }
 
-    if (!makeResponse.ok) {
+    if (!makeResponse.ok || !order) {
       return res.status(502).json({
         success: false,
         message: 'Automatisering kon niet worden gestart',
@@ -83,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return res.status(200).json({
       success: true,
       message: 'Automatisering gestart',
-      ...(order ? { order } : {}),
+      order,
     });
   } catch {
     return res.status(502).json({ success: false, message: 'Automatisering kon niet worden gestart' });
