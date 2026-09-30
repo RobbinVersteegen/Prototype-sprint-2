@@ -41,7 +41,23 @@ function App() {
     setTestingAutomation(true);
     setAutomationResult(undefined);
     try {
-      setAutomationResult(await testAutomation());
+      const result = await testAutomation();
+      setAutomationResult(result);
+      if (result.status === 'success' && result.order?.ordernummer) {
+        const { order } = result;
+        const processingResult = {
+          id: order.ordernummer,
+          orderNumber: order.ordernummer,
+          customer: order.klant,
+          model: order.model,
+          quantity: order.aantal,
+          status: order.status,
+        };
+        setProcessingResults((currentResults) => [
+          processingResult,
+          ...currentResults.filter((item) => item.orderNumber !== order.ordernummer),
+        ]);
+      }
     } catch {
       setAutomationResult({ status: 'failure', message: 'Automatisering kon niet worden gestart' });
     } finally {

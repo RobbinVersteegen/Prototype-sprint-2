@@ -7,13 +7,13 @@ interface RecentResultsProps {
   error?: string;
 }
 
-const statusClass: Record<ProcessingResult['status'], string> = {
+const statusClass: Record<string, string> = {
   Verwerkt: 'status-processed',
   'Controle nodig': 'status-review',
   'Niet verwerkt': 'status-skipped',
 };
 
-const classificationClass: Record<ProcessingResult['classification'], string> = {
+const classificationClass: Record<string, string> = {
   ORDER: 'badge-order',
   GEEN_ORDER: 'badge-no-order',
   ONZEKER: 'badge-uncertain',
@@ -36,6 +36,8 @@ export function RecentResults({ results, loading, error }: RecentResultsProps) {
               <th scope="col">DATUM / TIJD</th>
               <th scope="col">ORDERNUMMER</th>
               <th scope="col">AFZENDER / KLANT</th>
+              <th scope="col">MODEL</th>
+              <th scope="col">AANTAL</th>
               <th scope="col">CLASSIFICATIE</th>
               <th scope="col">STATUS</th>
               <th scope="col">REDEN</th>
@@ -44,11 +46,13 @@ export function RecentResults({ results, loading, error }: RecentResultsProps) {
           <tbody>
             {results.map((result) => (
               <tr key={result.id}>
-                <td className="received-time">{result.receivedAt}</td>
+                <td className="received-time">{result.receivedAt ?? '—'}</td>
                 <td className="order-id"><span className="order-icon"><Inbox size={15} /></span>{result.orderNumber}</td>
-                <td>{result.customer}</td>
-                <td><span className={`classification-badge ${classificationClass[result.classification]}`}>{result.classification}</span></td>
-                <td><span className={`result-status ${statusClass[result.status]}`}><span />{result.status}</span></td>
+                <td>{result.customer ?? '—'}</td>
+                <td>{result.model ?? '—'}</td>
+                <td>{result.quantity ?? '—'}</td>
+                <td>{result.classification ? <span className={`classification-badge ${classificationClass[result.classification]}`}>{result.classification}</span> : '—'}</td>
+                <td><span className={`result-status ${statusClass[result.status ?? ''] ?? 'status-new'}`}><span />{result.status ?? '—'}</span></td>
                 <td>{result.reason ?? '—'}</td>
               </tr>
             ))}

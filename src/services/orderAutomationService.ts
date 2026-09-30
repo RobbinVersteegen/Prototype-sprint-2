@@ -1,9 +1,18 @@
+import type { MakeOrderData } from '../types';
+
 export interface AutomationTestResult {
   status: 'success' | 'failure';
   message: string;
+  order?: MakeOrderData;
 }
 
 export const automationTestEndpoint = '/api/test-make';
+
+function isMakeOrderData(value: unknown): value is MakeOrderData {
+  if (typeof value !== 'object' || value === null) return false;
+  const order = value as Record<string, unknown>;
+  return typeof order.ordernummer === 'string' && order.ordernummer.trim().length > 0;
+}
 
 export async function testAutomation(): Promise<AutomationTestResult> {
   try {
@@ -23,9 +32,18 @@ export async function testAutomation(): Promise<AutomationTestResult> {
       };
     }
 
+    let order: MakeOrderData | undefined;
+    try {
+      const result = (await response.json()) as { order?: unknown };
+      if (isMakeOrderData(result.order)) order = result.order;
+    } catch {
+      // Any HTTP 2xx remains a successful start, even without an order response.
+    }
+
     return {
       status: 'success',
       message: 'Make is succesvol geactiveerd en controleert Gmail op nieuwe orders.',
+      ...(order ? { order } : {}),
     };
   } catch {
     return { status: 'failure', message: 'Automatisering kon niet worden gestart' };
